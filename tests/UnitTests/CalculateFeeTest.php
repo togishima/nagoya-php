@@ -1,6 +1,8 @@
 <?php
 
-use App\UseCase\CalculateFee;
+use App\Services\DistanceCalculator;
+use App\UseCases\CalculateFee;
+use Infrastructure\SubwayFeeRepository;
 use PHPUnit\Framework\TestCase;
 
 class TestCalculateFee extends TestCase
@@ -14,7 +16,6 @@ class TestCalculateFee extends TestCase
             ['W,1,X,1,Y,2,Z|W|Y', 240],
             ['W,1,X,1,Y,2,Z|Z|X', 270],
         ];
-        $this->calculator = new CalculateFee();
     }
 
     /**
@@ -22,9 +23,14 @@ class TestCalculateFee extends TestCase
      */
     public function basicCalculation()
     {
+        $calculator = new CalculateFee(
+            new SubwayFeeRepository(),
+            new DistanceCalculator()
+        );
+        
         foreach($this->testData as $testCase) {
             [$definitions, $to, $from] = explode('|', $testCase[0]);
-            $calculated_fee = $this->calculator->calculate($definitions, $to, $from);
+            $calculated_fee = $calculator->calculate($definitions, $to, $from);
             $this->assertTrue($calculated_fee === $testCase[1]);
         }
     }
